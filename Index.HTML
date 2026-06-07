@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anandha's — AI Food Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <span class="brand-icon">🍽️</span>
+      <div>
+        <div class="brand-name">Anandha's</div>
+        <div class="brand-sub">AI Ordering Assistant</div>
+      </div>
+    </div>
+    <div class="header-status">
+      <span class="status-dot"></span>
+      <span class="status-text">Online · Ready to order</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN LAYOUT ===== -->
+<main class="main-layout">
+
+  <!-- LEFT: Menu Panel -->
+  <aside class="menu-panel" id="menuPanel">
+    <div class="panel-header">
+      <h2>Today's Menu</h2>
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="menuSearch" placeholder="Search dishes..." oninput="filterMenu(this.value)"/>
+      </div>
+      <div class="category-tabs" id="categoryTabs"></div>
+    </div>
+    <div class="menu-list" id="menuList"></div>
+  </aside>
+
+  <!-- CENTER: Chat Window -->
+  <section class="chat-section">
+    <div class="chat-window" id="chatWindow">
+      <!-- Messages injected here -->
+    </div>
+
+    <!-- Quick replies -->
+    <div class="quick-chips" id="quickChips">
+      <button class="chip" onclick="sendQuick('Show me today\'s menu')">📋 View Menu</button>
+      <button class="chip" onclick="sendQuick('What are your best sellers?')">⭐ Best Sellers</button>
+      <button class="chip" onclick="sendQuick('Track my order')">🛵 Track Order</button>
+      <button class="chip" onclick="sendQuick('Apply a coupon')">🎟️ Offers</button>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="lang-select">
+        <select id="langSelect" onchange="setLang(this.value)">
+          <option value="en">🇬🇧 EN</option>
+          <option value="ta">🇮🇳 TN</option>
+          <option value="hi">🇮🇳 HI</option>
+        </select>
+      </div>
+      <div class="input-wrap">
+        <input type="text" id="chatInput" placeholder="Ask me anything about food..." onkeydown="if(event.key==='Enter') sendMessage()"/>
+        <button class="mic-btn" id="micBtn" onclick="toggleVoice()" title="Voice input">🎙️</button>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Order Summary Panel -->
+  <aside class="order-panel" id="orderPanel">
+    <div class="panel-header">
+      <h2>Your Order</h2>
+      <span class="order-badge" id="orderBadge">0</span>
+    </div>
+    <div class="order-items" id="orderItems">
+      <div class="empty-order">
+        <div class="empty-icon">🛒</div>
+        <p>Your cart is empty.<br/>Ask the AI to add items!</p>
+      </div>
+    </div>
+    <div class="order-footer" id="orderFooter" style="display:none">
+      <div class="order-breakdown">
+        <div class="row"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+        <div class="row"><span>Delivery</span><span id="delivery">₹40</span></div>
+        <div class="row discount-row" id="discountRow" style="display:none"><span>Discount 🎉</span><span id="discountAmt" style="color:var(--green)">-₹0</span></div>
+        <div class="row total-row"><span>Total</span><span id="total">₹0</span></div>
+      </div>
+      <div class="delivery-type">
+        <button class="dtype-btn active" id="btnDelivery" onclick="setDelivery('delivery')">🛵 Delivery</button>
+        <button class="dtype-btn" id="btnPickup" onclick="setDelivery('pickup')">🏪 Pickup</button>
+      </div>
+      <button class="confirm-btn" onclick="confirmOrder()">Confirm Order →</button>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ===== QR PAYMENT MODAL ===== -->
+<div class="modal-overlay" id="qrModal" style="display:none">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
+    <h3>Scan to Pay</h3>
+    <p class="modal-sub">Order <strong id="qrOrderId">#AN1042</strong> · <span id="qrAmount">₹0</span></p>
+    <div class="qr-container">
+      <canvas id="qrCanvas" width="200" height="200"></canvas>
+      <div class="qr-pulse"></div>
+    </div>
+    <p class="qr-hint">Scan with any UPI app · PhonePe · GPay · Paytm</p>
+    <button class="confirm-btn" onclick="paymentSuccess()" style="margin-top:16px">✅ I've Paid</button>
+  </div>
+</div>
+
+<!-- ===== TRACKING MODAL ===== -->
+<div class="modal-overlay" id="trackModal" style="display:none">
+  <div class="modal-card tracking-card">
+    <button class="modal-close" onclick="closeModal('trackModal')">✕</button>
+    <h3>Live Order Tracking</h3>
+    <p class="modal-sub" id="trackOrderId">Order #AN1042</p>
+    <div class="track-steps" id="trackSteps"></div>
+    <div class="track-eta">
+      <span class="eta-label">Estimated Arrival</span>
+      <span class="eta-time" id="etaTime">25–30 min</span>
+    </div>
+    <div class="track-map">
+      <div class="map-placeholder">
+        <div class="rider-dot" id="riderDot"></div>
+        <span>🏠</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FEEDBACK MODAL ===== -->
+<div class="modal-overlay" id="feedbackModal" style="display:none">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('feedbackModal')">✕</button>
+    <h3>How was your experience?</h3>
+    <p class="modal-sub">We'd love to improve for you 💛</p>
+    <div class="star-rating" id="starRating">
+      <span onclick="setRating(1)">★</span>
+      <span onclick="setRating(2)">★</span>
+      <span onclick="setRating(3)">★</span>
+      <span onclick="setRating(4)">★</span>
+      <span onclick="setRating(5)">★</span>
+    </div>
+    <textarea id="feedbackText" placeholder="Tell us what you loved or what we can improve..." rows="3"></textarea>
+    <button class="confirm-btn" onclick="submitFeedback()">Submit Feedback</button>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/menu-data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/tracking.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
