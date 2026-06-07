@@ -186,9 +186,3 @@ The AI replies in the **same language the user types in** — no manual switchin
 ## 👨‍💻 Author
 
 **Dhanushya** — AI & Data Science student, Karpagam College of Engineering, Coimbatore
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/yourprofile)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat-square&logo=github)](https://github.com/yourusername)
-[![Kaggle](https://img.shields.io/badge/Kaggle-Profile-20BEFF?style=flat-square&logo=kaggle)](https://kaggle.com/yourprofile)
-
----
